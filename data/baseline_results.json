@@ -1,0 +1,84 @@
+{
+  "train": {
+    "accuracy": 0.7976416087597389,
+    "f1": 0.6904991948470209,
+    "precision": 0.6362017804154303,
+    "recall": 0.7549295774647887,
+    "auc": 0.8809935310269548,
+    "confusion_matrix": [
+      [
+        2716,
+        613
+      ],
+      [
+        348,
+        1072
+      ]
+    ],
+    "threshold": 0.57
+  },
+  "val": {
+    "accuracy": 0.7757100881488737,
+    "f1": 0.6742532005689901,
+    "precision": 0.6253298153034301,
+    "recall": 0.7314814814814815,
+    "auc": 0.8319827479320544,
+    "confusion_matrix": [
+      [
+        555,
+        142
+      ],
+      [
+        87,
+        237
+      ]
+    ],
+    "threshold": 0.57
+  },
+  "test": {
+    "accuracy": 0.7601941747572816,
+    "f1": 0.649645390070922,
+    "precision": 0.6026315789473684,
+    "recall": 0.7046153846153846,
+    "auc": 0.8155155482815057,
+    "confusion_matrix": [
+      [
+        554,
+        151
+      ],
+      [
+        96,
+        229
+      ]
+    ],
+    "threshold": 0.57
+  },
+  "feature_columns": [
+    "depth",
+    "duration_hours",
+    "period_days",
+    "snr",
+    "odd_even_depth_diff",
+    "secondary_eclipse_depth",
+    "duty_cycle",
+    "norm_odd_even_diff",
+    "log_period",
+    "log_depth",
+    "log_snr"
+  ],
+  "model_type": "XGBClassifier",
+  "optimal_threshold": 0.57,
+  "feature_importances": {
+    "depth": 0.03392226621508598,
+    "duration_hours": 0.11396963149309158,
+    "period_days": 0.15733972191810608,
+    "snr": 0.03227653354406357,
+    "odd_even_depth_diff": 0.03767947480082512,
+    "secondary_eclipse_depth": 0.037173911929130554,
+    "duty_cycle": 0.3124704957008362,
+    "norm_odd_even_diff": 0.03340895473957062,
+    "log_period": 0.1787234991788864,
+    "log_depth": 0.033478718250989914,
+    "log_snr": 0.029556825757026672
+  }
+}

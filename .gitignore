@@ -1,0 +1,20 @@
+# Python bytecode & environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Large raw light curves and temporary downloads
+data/cleaned_lightcurves/
+*.fits
+*.tar.gz
+*.zip
+
+# Keep essential small data artifacts and models
+!data/.gitkeep
+!data/*.json
+!data/*.csv
+!data/*.png
+!data/*.joblib
+!data/*.pt
