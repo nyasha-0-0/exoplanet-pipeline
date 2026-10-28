@@ -5,20 +5,7 @@ Downloads Kepler light curves + labels straight from **MAST** and the
 views ready to train a transit-detection CNN (the AstroNet-style approach:
 2001-point "whole orbit" view + 201-point "zoomed on the transit" view).
 
-Per your notes, this does **not** use the Kaggle "Kepler labelled time
-series" or "KOI search results" CSVs — those are skipped in favor of
-downloading and cleaning the data ourselves from the primary sources.
 
-## Why this can't run inside the Claude sandbox
-
-Claude's own container can only reach package registries (PyPI, npm,
-GitHub, etc.), not `exoplanetarchive.ipac.caltech.edu` or MAST — so the
-actual downloading has to happen in **your** VS Code terminal, on your own
-machine, where those hosts are reachable. Everything here was written and
-sanity-checked with synthetic light-curve data (injected transit, gaps,
-NaNs, outliers, stellar-variability wobble) to confirm the cleaning math is
-correct — only the network calls themselves are untested, since I can't
-reach MAST from here.
 
 ## Setup
 
