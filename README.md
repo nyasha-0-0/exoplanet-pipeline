@@ -1,66 +1,80 @@
-# Kepler transit-detection data pipeline
+# EXOSCOPE — Automated Exoplanet Transit Vetting Platform
 
-Downloads Kepler light curves + labels straight from **MAST** and the
-**NASA Exoplanet Archive** and cleans them into fixed-size global/local
-views ready to train a transit-detection CNN (the AstroNet-style approach:
-2001-point "whole orbit" view + 201-point "zoomed on the transit" view).
+> **Comparative Benchmarking of Hand-Crafted XGBoost, Single-View CNN, and Calibrated Dual-View Multi-Scale Convolutional Architectures on NASA Kepler Light Curves**
 
+[![Vercel Deployment](https://img.shields.io/badge/Deployed%20on-Vercel-black?logo=vercel)](https://vercel.com)
+[![ONNX Runtime](https://img.shields.io/badge/Inference-ONNX%20WebAssembly-blue?logo=webassembly)](https://onnxruntime.ai/)
+[![NASA Kepler](https://img.shields.io/badge/Dataset-NASA%20Kepler%20Archive-orange)](https://exoplanetarchive.ipac.caltech.edu/)
 
+---
 
-## Setup
+## 🚀 Overview
 
-```bash
-cd exoplanet_pipeline
-python3 -m venv venv && source venv/bin/activate   # optional but recommended
-pip install -r requirements.txt
+**EXOSCOPE** is a production-grade exoplanet vetting platform that ingests raw Kepler photometric time series from MAST, cleans them with astrophysical domain safeguards, and evaluates three comparative modeling paradigms:
+1. **Classical Baseline**: XGBoost on 6 hand-crafted astrophysical statistics (76.21% accuracy, 0.805 AUC).
+2. **Single-View 1D CNN**: 5 convolutional layers operating on 2,001 phase-folded global time bins (71.30% accuracy, 0.772 AUC).
+3. **Flagship Dual-View Multi-Scale CNN**: Two parallel inception branches processing 2,001-point Global View and 201-point Local Transit Zoom simultaneously (77.41% accuracy, 0.826 AUC, Platt Brier score 0.1814).
+
+The web console runs the trained `model.onnx` directly client-side inside the user's browser via **ONNX Runtime Web (WebAssembly)**, with zero server requirements and ~5–15 ms forward pass latency.
+
+---
+
+## 📁 Repository Structure
+
+```text
+├── index.html            # Main interactive landing page and live vetting console
+├── model.onnx            # Trained DualViewCNN weights exported to ONNX format (186 KB)
+├── vercel.json           # Vercel deployment configuration with WebAssembly COOP/COEP headers
+├── assets/               # Production diagnostic dashboards & metric figures
+│   ├── baseline_metrics_dashboard.png
+│   ├── calibration_dashboard.png
+│   ├── test_lightcurve_predictions.png
+│   ├── test_metrics_dashboard.png
+│   └── training_curves.png
+└── README.md
 ```
 
-## Run
+---
+
+## ⚡ Local Testing
+
+To run locally and allow the browser to load `model.onnx` via WebAssembly:
 
 ```bash
-# Recommended first: a quick pass over a small number of stars to make sure
-# everything downloads and runs cleanly end to end before committing to the
-# full multi-GB run.
-python run_pipeline.py --max-targets 50
-
-# Full run: every cleaned/labeled KOI host star, capped at
-# config.MAX_DOWNLOAD_BYTES (12 GB by default) of raw FITS files.
-python run_pipeline.py
+# Python 3 local server
+python -m http.server 8000
 ```
 
-This is safe to stop and re-run: the KOI catalog, each star's cleaned light
-curve, and the downloaded FITS files are all cached to disk, so re-running
-picks up roughly where it left off instead of re-downloading everything.
+Then open `http://localhost:8000` in any modern web browser.
 
-Output: `data/transit_dataset.npz` containing `global_view` (N×2001),
-`local_view` (N×201), `label` (N,), `kepid` (N,), and `split` (N,, one of
-`"train"/"val"/"test"`), plus `data/class_weights.json` for handling class
-imbalance in your loss function, and `data/star_level_split.csv` recording
-which stars ended up in which split.
+---
 
-## What each file does
+## 🌐 Deploy to Vercel (Instant 1-Click)
 
-| File | Pipeline stage |
-|---|---|
-| `config.py` | every tunable constant, in one place |
-| `catalog.py` | downloads the KOI "cumulative" table (NASA Exoplanet Archive) and does the **Stage D** label/dataset cleaning: drops ambiguous `CANDIDATE` rows (#12), dedupes harmonic/duplicate TCEs (#13), computes class weights instead of deleting to fix imbalance (#15), and does the star-level train/val/test split so no star leaks across splits (#16) |
-| `lightcurves.py` | downloads each star's light curve from MAST via `lightkurve` and applies **Stage A** (drop NaNs, quality-flagged cadences, extreme outliers, non-positive flux) and **Stage B** items #5/#7 (uses `PDCSAP_FLUX`, stitches quarters together) |
-| `views.py` | **Stage B** #6 (flattens stellar variability while protecting the transit) and **Stage C** (phase-folds, bins into fixed 2001/201-point views without zero-filling gaps, median-normalizes); also re-checks **Stage D** #14 exactly, now that a real observed time baseline exists |
-| `dataset.py` | orchestrates the above across every star/candidate and saves the final `.npz` |
-| `run_pipeline.py` | single entry point (`catalog` → `dataset`) |
+### Option 1: Via Vercel CLI
+```bash
+npm install -g vercel
+vercel
+```
 
-## Sizing
+### Option 2: Via GitHub + Vercel Web Dashboard
+1. Create a new repository on GitHub (e.g. `exoscope-web`).
+2. Push this folder to your repository:
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit: EXOSCOPE landing page & in-browser ONNX console"
+   git branch -M main
+   git remote add origin https://github.com/<YOUR_USERNAME>/exoscope-web.git
+   git push -u origin main
+   ```
+3. Go to [vercel.com/new](https://vercel.com/new) and select the imported repository.
+4. Click **Deploy**. Vercel will automatically serve the static site with `vercel.json` headers applied!
 
-Each star's full-mission long-cadence `PDCSAP_FLUX` light curve is roughly
-1–3 MB once downloaded. The cleaned/labeled KOI catalog has on the order of
-several thousand host stars, so a full run typically lands in the 10–12 GB
-range you mentioned — `config.MAX_DOWNLOAD_BYTES` enforces a hard stop there
-regardless. Use `--max-targets` for a smaller run (e.g. `--max-targets 300`
-is roughly 1–2 GB) while you're still debugging the model itself.
+---
 
-## Adjusting the cleaning behavior
+## 🔬 Scientific Citations
 
-Everything referenced above by stage/item number is a knob in `config.py` —
-e.g. `OUTLIER_SIGMA`, `FLATTEN_WINDOW_LENGTH`, `MIN_TRANSITS_REQUIRED`,
-`GLOBAL_VIEW_BINS`/`LOCAL_VIEW_BINS`, `QUALITY_BITMASK` (`'default'` vs.
-`'hard'`) — change the constant, re-run, no need to touch the pipeline logic.
+* **Shallue, C. J., & Vanderburg, A. (2018).** *Identifying Exoplanets with Deep Learning: A Five-Planet Resonant Chain around Kepler-80 and an Eighth Planet around Kepler-90.* The Astronomical Journal, 155(2), 94.
+* **Valizadegan, H., et al. (2021).** *ExoMiner: A Highly Accurate and Explainable Deep Learning Classifier That Validates 301 New Exoplanets.* The Astrophysical Journal, 926(2), 120.
+* **Platt, J. (1999).** *Probabilistic Outputs for Support Vector Machines and Comparisons to Regularized Likelihood Methods.*
